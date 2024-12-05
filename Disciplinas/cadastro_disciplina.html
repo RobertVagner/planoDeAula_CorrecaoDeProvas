@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../index.css">
+    <title>Cadastrar Disciplina</title>
+</head>
+
+<body>
+    <div class="corsk">
+        <header>
+            <img src="../img/logo_unifenas.png" alt="Logo">
+            <h1>Cadastrar Disciplina</h1>
+            <!-- Exibir o email do usuário logado -->
+            <div id="user-email"></div>
+        </header>
+        <nav class="no-bootstrap">
+            <form action="../index.html" method="get" rel="noopener noreferrer">
+                <button class="close custom-btn" type="button" onclick="window.location.href='../index.html'">Página Inicial</button>
+            </form>
+            <!-- Botão de deslogar -->
+            <form rel="noopener noreferrer" style="text-align: right;">
+                <button type="button" class="close custom-btn" onclick="logout()">Deslogar</button>
+            </form>
+        </nav>
+    </div>
+
+    <div class="body1">
+        <div class="container">
+            <div class="text">
+                Cadastro de Disciplina
+            </div>
+            <form id="cadastro-disciplina-form">
+                <div>
+                    <label for="disciplina-ano">Ano:</label>
+                    <input type="text" id="disciplina-ano" required>
+                </div>
+                <div>
+                    <label for="disciplina-nome">Nome:</label>
+                    <input type="text" id="disciplina-nome" required>
+                </div>
+                <button type="submit">Cadastrar</button>
+            </form>
+            <!-- Botão para ir ao criarProvas.html -->
+            <button type="button" onclick="window.location.href='../criarProvas/criarProvas.html'">Criar Provas</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore-compat.js"></script>
+    <script src="/login/firebase-init.js"></script>
+
+    <script>
+        // Inicializa Firestore
+        const db = firebase.firestore();
+        let professorId = '';
+
+        // Função para verificar o estado de autenticação
+        firebase.auth().onAuthStateChanged(user => {
+            if (user) {
+                // Se o usuário estiver logado, exibe seu email
+                document.getElementById('user-email').innerText = user.email;
+                console.log('Usuário logado com email:', user.email);
+                // Carrega o ID do professor
+                loadProfessorId(user.email);
+            } else {
+                // Se não estiver logado, redireciona para a página de login
+                window.location.href = '/login/login.html';
+            }
+        });
+
+        // Função para deslogar
+        function logout() {
+            firebase.auth().signOut().then(() => {
+                // Redireciona para a página de login após deslogar
+                window.location.href = '/login/login.html';
+            }).catch(error => {
+                console.error('Erro ao deslogar:', error);
+            });
+        }
+
+        // Função para carregar o ID do professor com base no email
+        function loadProfessorId(email) {
+            console.log('Procurando professor com email:', email);
+            db.collection('professores').where('email', '==', email).get().then(querySnapshot => {
+                if (!querySnapshot.empty) {
+                    const doc = querySnapshot.docs[0];
+                    professorId = doc.id;
+                    console.log('ID do professor encontrado:', professorId);
+                } else {
+                    console.error('Professor não encontrado com o email fornecido.');
+                    alert('Professor não encontrado com o email fornecido. Verifique se o email está correto.');
+                }
+            }).catch(error => {
+                console.error('Erro ao buscar o ID do professor:', error);
+                alert('Erro ao buscar o ID do professor. Tente novamente.');
+            });
+        }
+
+        // Função para cadastrar uma nova disciplina
+        document.getElementById('cadastro-disciplina-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const ano = document.getElementById('disciplina-ano').value;
+            const nome = document.getElementById('disciplina-nome').value;
+
+            if (professorId) {
+                db.collection('disciplinas').add({
+                    data: ano,
+                    nome: nome,
+                    professor_id: professorId
+                }).then(() => {
+                    alert('Disciplina cadastrada com sucesso!');
+                    document.getElementById('cadastro-disciplina-form').reset();
+                }).catch((error) => {
+                    console.error('Erro ao cadastrar a disciplina:', error);
+                    alert('Erro ao cadastrar a disciplina. Tente novamente.');
+                });
+            } else {
+                console.error('ID do professor não carregado.');
+                alert('Erro ao carregar o ID do professor. Tente novamente.');
+            }
+        });
+    </script>
+</body>
+</html>

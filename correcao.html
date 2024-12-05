@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="index.css">
+    <title>Correção</title>
+</head>
+
+<body>
+    <div class="corsk">
+        <header>
+            <img src="img/logo_unifenas.png" alt="Logo">
+            <h1>Correção de Provas</h1>
+        </header>
+
+        <nav class="no-bootstrap">
+            <form action="index.html" method="get" rel="noopener noreferrer">
+                <button class="close custom-btn" type="button" onclick="location.href='index.html'">Página
+                    Inicial</button>
+            </form>
+            <form action="https://chat.openai.com/" method="get" target="_blank" rel="noopener noreferrer">
+                <button class="close custom-btn" type="button"
+                    onclick="window.open('https://chat.openai.com/', '_blank')">Acessar Chat GPT</button>
+            </form>
+            <form action="comoUsar.html" method="get" rel="noopener noreferrer">
+                <button class="close custom-btn" type="button" onclick="location.href='comoUsar.html'">Como usar o Chat
+                    GPT</button>
+            </form>
+            <form action="creditos.html" method="get" rel="noopener noreferrer">
+                <button class="close custom-btn" type="button" onclick="location.href='creditos.html'">Créditos</button>
+            </form>
+        </nav>
+    </div>
+
+    <div class="body1">
+        <div class="container">
+            <div class="text">
+                Questões / Respostas
+            </div>
+            <br>
+            <div class="content">
+                <form id="questionForm">
+                    <div>
+                        <label for="pergunta">Questão:</label>
+                        <input type="text" id="pergunta" name="pergunta" required>
+                        <label for="respostaAluno">Resposta Aluno:</label>
+                        <input type="text" id="respostaAluno" name="respostaAluno" required>
+                    </div>
+                    <div>
+                        <button type="submit">Enviar</button>
+                    </div>
+                    <div>
+                        <textarea id="resposta" name="resposta" rows="4" required readonly></textarea>
+                    </div>
+                    
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="body1">
+        <div class="container">
+            <div class="text">
+                Chat Corretor
+            </div>
+            <br>
+            <br>
+            <div class="content">
+                <textarea id="result" rows="10" disabled placeholder="Resposta da IA"></textarea>
+                <textarea id="inputQuestion" placeholder="Pergunte algo"></textarea>
+                <button id="submitQuestion">Enviar Pergunta</button>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <p>ATEX - © 2023 Gerador de Plano de Aula</p>
+    </footer>
+
+    <script type="importmap">
+{
+    "imports": {
+        "@google/generative-ai": "https://esm.run/@google/generative-ai"
+    }
+}
+</script>
+    <script src="promptPergunta.js" defer></script>
+    <script src="correcao.js" type="module"></script>
+</body>
+
+</html>

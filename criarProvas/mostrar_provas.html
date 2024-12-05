@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../styles.css">
+    <title>Provas</title>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="../img/logo_unifenas.png" alt="Logo">
+            <h1>Provas</h1>
+            <div id="user-email"></div>
+        </header>
+        <nav>
+            <button class="close custom-btn" type="button" onclick="window.location.href='../index.html'">Página Inicial</button>
+            <button type="button" class="close custom-btn" onclick="logout()">Deslogar</button>
+        </nav>
+        <div id="provas-container"></div>
+        <div id="questoes-container" style="display:none;">
+            <h2>Questões da Prova</h2>
+            <div id="questoes-list"></div>
+            <button type="button" onclick="fecharQuestoes()">Fechar</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore-compat.js"></script>
+    <script>
+        // Inicializa Firestore
+        const firebaseConfig = {
+            apiKey: "AIzaSyAZ1kxXXrnkMuwg1-sjkdqqv7Nf4ttsSHY",
+            authDomain: "atexcorrecao.firebaseapp.com",
+            projectId: "atexcorrecao",
+            storageBucket: "atexcorrecao.appspot.com",
+            messagingSenderId: "980605057594",
+            appId: "1:980605057594:web:8430c843e3b0bc4b19d303"
+        };
+        firebase.initializeApp(firebaseConfig);
+
+        const db = firebase.firestore();
+
+        // Função para verificar o estado de autenticação
+        firebase.auth().onAuthStateChanged(user => {
+            if (user) {
+                document.getElementById('user-email').innerText = `Usuário: ${user.email}`;
+                console.log('Usuário logado com email:', user.email);
+                carregarDisciplinas(user.email);
+            } else {
+                window.location.href = '/login/login.html';
+            }
+        });
+
+        // Função para deslogar
+        function logout() {
+            firebase.auth().signOut().then(() => {
+                window.location.href = '/login/login.html';
+            }).catch(error => {
+                console.error('Erro ao deslogar:', error);
+            });
+        }
+
+        // Função para carregar e exibir as disciplinas do professor
+        function carregarDisciplinas(email) {
+            db.collection('professores').where('email', '==', email).get().then(querySnapshot => {
+                if (!querySnapshot.empty) {
+                    const professorId = querySnapshot.docs[0].id;
+                    console.log('ID do professor encontrado:', professorId);
+                    db.collection('disciplinas').where('professor_id', '==', professorId).get().then(disciplinaSnapshot => {
+                        const disciplinaIds = disciplinaSnapshot.docs.map(doc => doc.id);
+                        carregarProvas(disciplinaIds);
+                    }).catch(error => {
+                        console.error('Erro ao carregar disciplinas:', error);
+                    });
+                } else {
+                    console.error('Professor não encontrado com o email fornecido.');
+                }
+            }).catch(error => {
+                console.error('Erro ao carregar dados do professor:', error);
+            });
+        }
+
+        // Função para carregar e exibir as provas
+        function carregarProvas(disciplinaIds) {
+            const provasContainer = document.getElementById('provas-container');
+            provasContainer.innerHTML = '';
+
+            disciplinaIds.forEach(disciplinaId => {
+                db.collection('provas').where('disciplina_id', '==', disciplinaId).get().then(provaSnapshot => {
+                    provaSnapshot.forEach(doc => {
+                        const prova = doc.data();
+                        console.log('Prova encontrada:', prova);
+
+                        // Convertendo o Timestamp para uma data legível
+                        const provaDate = prova.data.toDate();
+                        const formattedDate = provaDate.toLocaleDateString('pt-BR');
+
+                        const provaElement = document.createElement('div');
+                        provaElement.textContent = `Data: ${formattedDate} - Descrição: ${prova.descricao} - Disciplina ID: ${prova.disciplina_id}`;
+                        provaElement.classList.add('prova-item');
+                        provaElement.onclick = () => mostrarQuestoesERespostas(doc.id);
+                        provasContainer.appendChild(provaElement);
+                    });
+                }).catch(error => {
+                    console.error('Erro ao carregar provas:', error);
+                });
+            });
+        }
+
+        // Função para mostrar as questões e respostas da prova
+        function mostrarQuestoesERespostas(provaId) {
+            const questoesContainer = document.getElementById('questoes-list');
+            questoesContainer.innerHTML = '';
+
+            db.collection('questoes').where('prova_id', '==', provaId).get().then(questaoSnapshot => {
+                questaoSnapshot.forEach(questaoDoc => {
+                    const questao = questaoDoc.data();
+                    const questaoId = questaoDoc.id;
+                    console.log('Questão encontrada:', questao);
+
+                    const questaoElement = document.createElement('div');
+                    questaoElement.textContent = `Enunciado: ${questao.enunciado}`;
+                    questaoElement.classList.add('questao-item');
+                    questoesContainer.appendChild(questaoElement);
+
+                    // Buscar as respostas dos alunos para esta questão
+                    db.collection('respostas').where('questao_id', '==', questaoId).get().then(respostasSnapshot => {
+                        if (!respostasSnapshot.empty) {
+                            respostasSnapshot.forEach(respostaDoc => {
+                                const resposta = respostaDoc.data();
+                                console.log('Resposta do aluno:', resposta);
+
+                                const respostaElement = document.createElement('div');
+                                respostaElement.textContent = `Aluno ID: ${resposta.aluno_id} - Resposta: ${resposta.resposta}`;
+                                respostaElement.classList.add('resposta-item');
+                                questoesContainer.appendChild(respostaElement);
+                            });
+                        } else {
+                            console.log('Nenhuma resposta encontrada para esta questão.');
+                        }
+                    }).catch(error => {
+                        console.error('Erro ao buscar respostas dos alunos:', error);
+                    });
+
+                });
+
+                document.getElementById('questoes-container').style.display = 'block';
+            }).catch(error => {
+                console.error('Erro ao carregar questões:', error);
+            });
+        }
+
+        // Função para fechar as questões
+        function fecharQuestoes() {
+            document.getElementById('questoes-container').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

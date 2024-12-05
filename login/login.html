@@ -1,0 +1,63 @@
+<!doctype html>
+
+<html>
+
+<head>
+    <title>Login</title> <!-- Título da página -->
+</head>
+
+<body class="centralize"> <!-- Corpo da página, com classe centralize para centralizar o conteúdo -->
+    
+    <!-- Formulário de login -->
+    <form>
+        <img src="../img/logo_unifenas.png" alt="Logo">
+        <br>
+        <br>
+        <br>
+        <!-- Campo de e-mail -->
+        <div class="form-field">
+            <div><label>Email</label></div> <!-- Rótulo para o campo de e-mail -->
+            <input type="email" name="email" id="email" placeholder="seu@email.com" onchange="onChangeEmail()"/> <!-- Campo de entrada de e-mail -->
+            <div class="error" id="email-required-error">Email é obrigatório</div> <!-- Mensagem de erro para e-mail obrigatório -->
+            <div class="error" id="email-invalid-error">Email é inválido</div> <!-- Mensagem de erro para e-mail inválido -->
+        </div>
+
+        <!-- Campo de senha -->
+        <div class="form-field">
+            <div><label>Senha</label></div> <!-- Rótulo para o campo de senha -->
+            <input type="password" name="password" id="password" placeholder="Senha" onchange="onChangePassword()"/> <!-- Campo de entrada de senha -->
+            <div class="error" id="password-required-error">Senha é obrigatória</div> <!-- Mensagem de erro para senha obrigatória -->
+        </div>
+
+        <!-- Botão para recuperar senha -->
+        <div>
+            <button type="button" class="clear" id="recover-password-button" onclick="recoverPassword()" disabled="true">Recuperar senha</button>
+        </div>
+
+        <!-- Botão de login -->
+        <div>
+            <button type="button" class="solid" id="login-button" disabled="true" onclick="login()">Entrar</button>
+        </div>
+
+        <!-- Botão para registrar -->
+        <div>
+            <button type="button" class="outline" onclick="register()">Registrar</button>
+        </div>
+    </form>
+
+</body>
+
+<!-- Links para os arquivos de estilo -->
+<link rel="stylesheet" href="login.css"> <!-- Estilos específicos para o formulário de login -->
+<link rel="stylesheet" href="global.css"> <!-- Estilos globais para a página -->
+
+<!-- Incluindo scripts do Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="../login/supabase-init.js"></script>
+
+<!-- Incluindo scripts personalizados -->
+<script src="../login/login.js"></script> <!-- Scripts para funcionalidades de login -->
+<script src="../login/validations.js"></script> <!-- Scripts para validações de entrada -->
+<script src="../login/loading.js"></script> <!-- Scripts para mostrar indicadores de carregamento -->
+
+</html>

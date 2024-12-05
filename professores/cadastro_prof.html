@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../index.css">
+    <title>Gerador de Plano de Aula</title>
+</head>
+<body>
+    <div class="corsk">
+        <header>
+            <img src="../img/logo_unifenas.png" alt="Logo">
+            <h1>Gerador de Plano de Aula</h1>
+            <div id="user-email"></div>
+        </header>
+        <nav class="no-bootstrap">
+            <form action="../index.html" method="get" rel="noopener noreferrer">
+                <button class="close custom-btn" onclick="document.getElementById('submit-btn').click()">Página Inicial</button>
+            </form>
+            <form rel="noopener noreferrer" style="text-align: right;">
+                <button type="button" class="close custom-btn" onclick="logout()">Deslogar</button>
+            </form>
+        </nav>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.7/firebase-firestore-compat.js"></script>
+    <script src="/login/firebase-init.js"></script>
+
+    <script>
+        const db = firebase.firestore();
+
+        firebase.auth().onAuthStateChanged(user => {
+            if (user) {
+                document.getElementById('user-email').innerText = user.email;
+                loadProfessorData(user.uid);
+            } else {
+                window.location.href = '/login/login.html';
+            }
+        });
+
+        function logout() {
+            firebase.auth().signOut().then(() => {
+                window.location.href = '/login/login.html';
+            }).catch(error => {
+                console.error('Erro ao deslogar:', error);
+            });
+        }
+
+        function loadProfessorData(userId) {
+            const professorRef = db.collection('professores').doc(userId);
+
+            professorRef.get().then((doc) => {
+                if (doc.exists) {
+                    const professorData = doc.data();
+                    document.getElementById('professor-email').value = professorData.email;
+                    document.getElementById('professor-nome').value = professorData.nome;
+                } else {
+                    document.getElementById('professor-email').value = firebase.auth().currentUser.email;
+                    document.getElementById('professor-nome').value = '';
+                    document.getElementById('professor-senha').value = '';
+                }
+            }).catch((error) => {
+                console.error('Erro ao buscar os dados do professor:', error);
+            });
+        }
+
+        function saveProfessorData() {
+            const user = firebase.auth().currentUser;
+
+            if (user) {
+                const userId = user.uid;
+                const professorRef = db.collection('professores').doc(userId);
+
+                const updatedProfessorData = {
+                    email: document.getElementById('professor-email').value,
+                    nome: document.getElementById('professor-nome').value,
+                    senha: document.getElementById('professor-senha').value
+                };
+
+                professorRef.set(updatedProfessorData).then(() => {
+                    alert('Dados salvos com sucesso!');
+                }).catch((error) => {
+                    console.error('Erro ao salvar os dados do professor:', error);
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            firebase.auth().onAuthStateChanged(user => {
+                if (user) {
+                    document.getElementById('user-email').innerText = user.email;
+                    loadProfessorData(user.uid);
+                } else {
+                    window.location.href = '/login/login.html';
+                }
+            });
+
+            document.querySelector('#planForm button').addEventListener('click', saveProfessorData);
+        });
+    </script>
+
+    <div class="body1">
+        <div class="container">
+            <div class="text">Meus Dados</div>
+            <form id="planForm">
+                <div class="form-field">
+                    <label for="professor-email">Email:</label>
+                    <input type="email" id="professor-email" disabled>
+                </div>
+                <div class="form-field">
+                    <label for="professor-nome">Nome:</label>
+                    <input type="text" id="professor-nome" placeholder="Seu nome">
+                    <label for="professor-senha">Senha:</label>
+                    <input type="text" id="professor-senha" placeholder="Digite a senha para login no app">
+                </div>
+                <button type="button">Salvar</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
