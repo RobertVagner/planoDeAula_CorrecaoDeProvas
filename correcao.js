@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Replace with your actual API key
-const API_KEY = 'sua chave aqui';
+const API_KEY = 'AIzaSyDBsNQm1LesAvhXDDJ1NeNptmTePNoVwss';
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 document.addEventListener('DOMContentLoaded', () => {
